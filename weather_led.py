@@ -23,6 +23,7 @@ firstrun = 0
 watch = 0
 last_indication = 0
 indication_time = 60
+err = 0
 print ("Starting up...")
 
 #Initializing the GPIO pins...
@@ -49,8 +50,10 @@ def load_weather():
 #        response = urllib2.urlopen('http://127.0.0.1/changeme.json')
 	html = response.read()
 	report = json.loads(html)
-    except urllib2.HTTPError, e:
+	err = 0
+    except (urllib2.HTTPError, urllib2.URLError):
 	print ("%I:%M:%S, Having trouble connecting to the internet... Ignoring for now.")
+	err = "web" 
     global a1
     global a2
     global a3
@@ -64,32 +67,32 @@ def load_weather():
 	    update_interval = 300
 	else:
 	    update_interval = 60
-    except IndexError:
+    except (IndexError, UnboundLocalError):
 	a1 = "..."
 	print (a1)
 	update_interval = 300
     try:
         a2 = report['alerts'][1]['type']
 	print (a2)
-    except IndexError:
+    except (IndexError, UnboundLocalError):
 	a2 = "..."
 	print (a2)
     try:
         a3 = report['alerts'][2]['type']
 	print (a3)
-    except IndexError:
+    except (IndexError, UnboundLocalError):
 	a3 = "..."
 	print (a3)
     try:
         a4 = report['alerts'][3]['type']
 	print (a4)
-    except IndexError:
+    except (IndexError, UnboundLocalError):
 	a4 = "..."
 	print (a4)
     try:
         a5 = report['alerts'][4]['type']
 	print (a5)
-    except IndexError:
+    except (IndexError, UnboundLocalError):
 	a5 = "..."
 	print (a5)
     
@@ -146,13 +149,25 @@ while True:
                 print (time.strftime("%I:%M:%S, LED off, Sleep was called"))
 	        sleep()
 	
-	if time.time() >= last_indication + indication_time and a1 == "...":
-	    b.ChangeDutyCycle(100)
-	    time.sleep(0.10)
-	    b.ChangeDutyCycle(0)
-	    last_indication = time.time()
-	    print (time.strftime("%I:%M:%S, LED flickered normally"))
-	    sleep()
+	if time.time() >= last_indication + indication_time:
+	    if err == "web":
+		r.ChangeDutyCycle(50)
+		time.sleep(1)
+		r.ChangeDutyCycle(0)
+		last_indication = time.time()
+		sleep()
+	    if err == "sys":
+		r.ChangeDutyCycle(50)
+		last_indication == time.time()
+		sleep()
+	    if a1 == "..." and err == 0:
+	    	    b.ChangeDutyCycle(100)
+	            time.sleep(0.10)
+	            b.ChangeDutyCycle(0)
+	            last_indication = time.time()
+	            print (time.strftime("%I:%M:%S, LED flickered normally"))
+	            sleep()
     except:
 	print "Error:", sys.exc_info()[0]
+	err = "sys"
 	raise
