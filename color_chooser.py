@@ -68,15 +68,10 @@ try:
 		    print ("Bye!")
 	            complete = 1
 		    break
-#                else:
-#                    continue
 	    except (ValueError, NameError):
-#	            print("I didn't catch that.")
 		    continue
 	    except SyntaxError:
 		break
 except (KeyboardInterrupt, done):
     print	
     print("Goodbye!")
-  
-7
