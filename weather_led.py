@@ -50,10 +50,11 @@ def load_weather():
     global err
     try:
         response = urllib2.urlopen('http://api.wunderground.com/api/' + str(APIKEY) + '/alerts/q/' + str(STATE) + '/' + str(CITY) + '.json')
+	if response == urllib2.urlopen('http://api.wunderground.com/api/' + str(APIKEY) + '/alerts/q/' + str(STATE) + '/' + str(CITY) + '.json'):
+	    err = 0
 #        response = urllib2.urlopen('http://127.0.0.1/changeme.json')
 	html = response.read()
 	report = json.loads(html)
-#	err = 0
     except (urllib2.HTTPError, urllib2.URLError):
 	print (time.strftime("%I:%M:%S, Having trouble connecting to the internet... Ignoring for now."))
 	err = "web" 
@@ -76,7 +77,7 @@ def load_weather():
 	a1 = "..."
 	print (a1)
 	update_interval = 300
-	err = "web"
+#	err = "web"
 #	print ("Error Code Changed - Web Exception 2")
     try:
         a2 = report['alerts'][1]['type']

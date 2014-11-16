@@ -1,5 +1,5 @@
 #This isn't much, but this helps to define color codes for different colors!
-
+import random
 #Setting up the Pi...
 import RPi.GPIO as GPIO
 GPIO.setwarnings(False)
@@ -19,6 +19,7 @@ b.start(0)
 complete = 0
 
 print ("Hello! Just follow the prompts.")
+print ("If you're looking for a random color, just hit enter throughout the prompts without entering a number.")
 try:
     while True:
 	r.ChangeDutyCycle(0)
@@ -33,8 +34,11 @@ try:
 	            break
 	        else:
 	            print ("I can't compute that. Try again?")
-            except (ValueError, SyntaxError, NameError):
+            except (ValueError, NameError):
                 print ("I can't compute that. Try again?")
+	    except SyntaxError:
+		red = random.randint(0,100)
+		break
 	while True:
 	    try:
 	        green = input("Choose a value for the Green LED between 0 and 100: ")
@@ -42,8 +46,11 @@ try:
 		    break
 		else:
 		   print("I can't compute that. Try again?")
-	    except (ValueError, SyntaxError, NameError):
+	    except (ValueError, NameError):
 		print("I can't compute that. Try again?")
+	    except SyntaxError:
+		green = random.randint(0,100)
+		break
         while True:
 	    try:
 	        blue = input("Choose a value for the Blue LED between 0 and 100: ")
@@ -51,8 +58,11 @@ try:
 		    break
 		else:
 		    print("I can't compute that. Try again?")
-	    except (ValueError, SyntaxError, NameError):
+	    except (ValueError, NameError):
 		print("I can't compute that. Try again?")
+	    except SyntaxError:
+		blue = random.randint(0,100)
+		break
 	print
         print("Working...")
 	r.ChangeDutyCycle(red)
@@ -72,6 +82,6 @@ try:
 		    continue
 	    except SyntaxError:
 		break
-except (KeyboardInterrupt, done):
+except KeyboardInterrupt:
     print	
     print("Goodbye!")
