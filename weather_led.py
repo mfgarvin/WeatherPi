@@ -10,6 +10,7 @@ import urllib2
 import time
 import RPi.GPIO as GPIO
 import sys
+import os
 
 #Setting some variables
 APIKEY = "0f9045beb1c7e0e7"
@@ -40,6 +41,11 @@ b = GPIO.PWM(04, 60)
 r.start(0)
 g.start(0)
 b.start(0)
+
+#Enabling logging, creating a directory if necessary
+if not os.path.exists('logs'):
+    os.makedirs('logs')
+sys.stdout = open(os.path.join('logs', 'weather' + time.strftime("%m-%d-%Y %T") + '.log'), 'a+', 1)
 
 #This function puts the program to sleep for the smallest value of time between actions (LED cycling, Weather updating, and debug LED cycling)
 def sleep():
