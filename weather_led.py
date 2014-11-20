@@ -1,10 +1,14 @@
-#TODO:
-#
-#Specify RGB values for all of the situations. I might want to change a couple of the blink rates as well
-#Automaticlly set alert to ... after time equals epoch_expire time in the json
-#incorporate a dismiss button to set the alert to a solid indicator instead of having it blink continously.
-#Build in a quick blue "blip" indicating that the program is running.
-#
+'''
+TODO:
+
+Specify RGB values for all of the situations. I might want to change a couple of the blink rates as well
+Automaticlly set alert to ... after time equals epoch_expire time in the json
+incorporate a dismiss button to set the alert to a solid indicator instead of having it blink continously.
+
+This code utilizes the Weather Underground API, and all weather data is property of them.
+
+'''
+
 import json
 import urllib2
 import time
