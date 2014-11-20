@@ -56,8 +56,6 @@ def load_weather():
     global err
     try:
         response = urllib2.urlopen('http://api.wunderground.com/api/' + str(APIKEY) + '/alerts/q/' + str(STATE) + '/' + str(CITY) + '.json')
-	if response == urllib2.urlopen('http://api.wunderground.com/api/' + str(APIKEY) + '/alerts/q/' + str(STATE) + '/' + str(CITY) + '.json'):
-	    err = 0
 #        response = urllib2.urlopen('http://127.0.0.1/changeme.json')
 	html = response.read()
 	report = json.loads(html)
@@ -65,6 +63,8 @@ def load_weather():
 	print (time.strftime("%I:%M:%S, Having trouble connecting to the internet... Ignoring for now."))
 	err = "web" 
 #	print ("Error Code Changed - Web Exception")
+    else:
+	err = 0
     global a1
     global a2
     global a3
@@ -120,6 +120,14 @@ def load_weather():
 	    last_flip = time.time() - 1
     except KeyError:
 	pass
+
+#Note: I can directly pull these values from the function instead of storing them in variables. 
+#def redLed(a, b, c, d):
+#    a = The intensity of the color
+#    b = timeOn
+#    c = timeOff
+#    d = fadeTime - How long fading will take
+    
 #The LED Indicator Color Values and Timings
 LED = { 'TOR': { 'R': 100, 'G': 0, 'B': 0, 'T': 1 }, 'TOW': { 'R': 100, 'G': 0, 'B': 0, 'T': 0 }, 'WRN': { 'R': 100, 'G':50, 'B': 0, 'T': 1 }, 'SEW': { 'R': 100, 'G': 50, 'B': 0, 'T': 0 }, 'WIN': { 'R': 15, 'G': 25, 'B': 100, 'T': 2.3 }, 'FLO': { 'R': 25, 'G': 100, 'B': 10, 'T': 1 }, 'WAT': { 'R': 25, 'G': 100, 'B': 10, 'T': 0 }, 'WND': { 'R': 10, 'G': 60, 'B': 50, 'T': 2.3 }, 'SVR': { 'R': 100, 'G': 50, 'B': 0, 'T': 2.3 }, 'HEA': { 'R': 90, 'G': 10, 'B': 0, 'T': 2.3 }, 'FOG': { 'R': 10, 'G': 10, 'B': 10, 'T': 2.3 }, 'SPE': { 'R': 0, 'G': 0, 'B': 0, 'T': 2.3 }, 'FIR': { 'R': 100, 'G': 0, 'B': 0, 'T': 2.3 }, 'VOL': { 'R': 100, 'G': 0, 'B': 0, 'T': 2.3 }, 'HWW': { 'R': 0, 'G': 0, 'B': 0, 'T': 1 }, 'HUR': { 'R': 1, 'G': 0, 'B': 0, 'T': 2.3 }, 'REC': { 'R': 0, 'G': 0, 'B': 0, 'T': 2.3 }, 'REP': { 'R': 0, 'G': 0, 'B': 0, 'T': 2.3 }, 'PUB': { 'R': 0, 'G': 0, 'B': 0, 'T': 2.3 }, 'ERR': { 'R': 100, 'G': 0, 'B': 0, 'T': 5 }}
 

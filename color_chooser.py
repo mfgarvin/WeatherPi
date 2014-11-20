@@ -22,9 +22,9 @@ print ("Hello! Just follow the prompts.")
 print ("If you're looking for a random color, just hit enter throughout the prompts without entering a number.")
 try:
     while True:
-	r.ChangeDutyCycle(0)
-	g.ChangeDutyCycle(0)
-	b.ChangeDutyCycle(0)
+#	r.ChangeDutyCycle(0)
+#	g.ChangeDutyCycle(0)
+#	b.ChangeDutyCycle(0)
 	if complete == 1:
 	    break
         while True:
