@@ -1,3 +1,5 @@
+#Optomized for Python 3
+
 '''
 TODO:
 
@@ -5,16 +7,17 @@ Specify RGB values for all of the situations. I might want to change a couple of
 Automaticlly set alert to ... after time equals epoch_expire time in the json
 incorporate a dismiss button to set the alert to a solid indicator instead of having it blink continously.
 
-This code utilizes the Weather Underground API, and all weather data is property of them.
+This code utilizes the Weather Underground API, and all data pertaining to their services is their property.
 
 '''
 
 import json
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import time
 import RPi.GPIO as GPIO
 import sys
 import os
+import logging
 
 #Setting some variables
 APIKEY = "0f9045beb1c7e0e7"
@@ -34,14 +37,14 @@ print ("Starting up...")
 #Initializing the GPIO pins...
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(00, GPIO.OUT)
-GPIO.setup(01, GPIO.OUT)
-GPIO.setup(04, GPIO.OUT)
+GPIO.setup(0o1, GPIO.OUT)
+GPIO.setup(0o4, GPIO.OUT)
 GPIO.output(00, 1)
-GPIO.output(01, 1)
-GPIO.output(04, 1)
+GPIO.output(0o1, 1)
+GPIO.output(0o4, 1)
 r = GPIO.PWM(00, 60)
-g = GPIO.PWM(01, 60)
-b = GPIO.PWM(04, 60)
+g = GPIO.PWM(0o1, 60)
+b = GPIO.PWM(0o4, 60)
 r.start(0)
 g.start(0)
 b.start(0)
@@ -50,6 +53,8 @@ b.start(0)
 if not os.path.exists('logs'):
     os.makedirs('logs')
 sys.stdout = open(os.path.join('logs', 'weather' + time.strftime("%m-%d-%Y %T") + '.log'), 'a+', 1)
+LOG_FILENAME = './crash.debug'
+logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG,)
 
 #This function puts the program to sleep for the smallest value of time between actions (LED cycling, Weather updating, and debug LED cycling)
 def sleep():
@@ -59,16 +64,21 @@ def sleep():
 def load_weather():
     global err
     try:
-        response = urllib2.urlopen('http://api.wunderground.com/api/' + str(APIKEY) + '/alerts/q/' + str(STATE) + '/' + str(CITY) + '.json')
+        response = urllib.request.urlopen('http://api.wunderground.com/api/' + str(APIKEY) + '/alerts/q/' + str(STATE) + '/' + str(CITY) + '.json')
 #        response = urllib2.urlopen('http://127.0.0.1/changeme.json')
-	html = response.read()
-	report = json.loads(html)
-    except (urllib2.HTTPError, urllib2.URLError):
-	print (time.strftime("%I:%M:%S, Having trouble connecting to the internet... Ignoring for now."))
-	err = "web" 
+        encoding = response.headers.get_content_charset()
+        time.sleep(0.1)
+        html = response.readall().decode(encoding)
+        report = json.loads(html)
+    except (urllib.error.HTTPError, urllib.error.URLError):
+        print((time.strftime("%I:%M:%S, Having trouble connecting to the internet... Ignoring for now.")))
+        err = "web" 
 #	print ("Error Code Changed - Web Exception")
+    except (TypeError):
+        print("Something went wrong decoding the html. Trying again.")
+        load_weather()
     else:
-	err = 0
+        err = 0
     global a1
     global a2
     global a3
@@ -77,53 +87,53 @@ def load_weather():
     global update_interval
     try:
         a1 = report['alerts'][0]['type']
-	print (a1)
+        print (a1)
 #	err = 0
-	if a1 == 'WIN':
-	    update_interval = 300
-	else:
-	    update_interval = 60
+        if a1 == 'WIN':
+            update_interval = 300
+        else:
+            update_interval = 60
     except (IndexError, UnboundLocalError):
-	a1 = "..."
-	print (a1)
-	update_interval = 300
+        a1 = "..."
+        print (a1)
+        update_interval = 300
 #	err = "web"
 #	print ("Error Code Changed - Web Exception 2")
     try:
         a2 = report['alerts'][1]['type']
-	print (a2)
+        print (a2)
 #	err = 0
     except (IndexError, UnboundLocalError):
-	a2 = "..."
-	print (a2)
+       a2 = "..."
+       print (a2)
     try:
         a3 = report['alerts'][2]['type']
-	print (a3)
+        print (a3)
 #	err = 0
     except (IndexError, UnboundLocalError):
-	a3 = "..."
-	print (a3)
+        a3 = "..."
+        print (a3)
     try:
         a4 = report['alerts'][3]['type']
-	print (a4)
+        print (a4)
 #	err = 0
     except (IndexError, UnboundLocalError):
-	a4 = "..."
-	print (a4)
+        a4 = "..."
+        print (a4)
     try:
         a5 = report['alerts'][4]['type']
-	print (a5)
+        print (a5)
 #	err = 0
     except (IndexError, UnboundLocalError):
-	a5 = "..."
-	print (a5)
+        a5 = "..."
+        print (a5)
     
     global last_flip
     try:
-	if last_flip == float("inf") and LED[a1]['T'] != 0:
-	    last_flip = time.time() - 1
+        if last_flip == float("inf") and LED[a1]['T'] != 0:
+            last_flip = time.time() - 1
     except KeyError:
-	pass
+        pass
 
 #Note: I can directly pull these values from the function instead of storing them in variables. 
 #def redLed(a, b, c, d):
@@ -139,74 +149,77 @@ LED = { 'TOR': { 'R': 100, 'G': 0, 'B': 0, 'T': 1 }, 'TOW': { 'R': 100, 'G': 0, 
 
 while True:
     try:
-	if time.time() >= last_call + update_interval:
-	    load_weather()
-	    last_call = time.time()
-	    print (time.strftime("%I:%M:%S, Weather was loaded"))
-	    print (time.strftime("%I:%M:%S, Sleep was called via weather function"))
-	    sleep()
+        if time.time() >= last_call + update_interval:
+            load_weather()
+            last_call = time.time()
+            print((time.strftime("%I:%M:%S, Weather was loaded")))
+            print((time.strftime("%I:%M:%S, Sleep was called via weather function")))
+            sleep()
 	
-	elif time.time() >= last_flip + flip_time:
-	    if a1 != "...":
-		if GPIO.input(00) == 1 or GPIO.input(01) == 1 or GPIO.input(04) == 1:
-		    r.ChangeDutyCycle(0)
-	   	    g.ChangeDutyCycle(0)
-		    b.ChangeDutyCycle(0)
-		    flip_time = LED[a1]['T']
-		    print (time.strftime("%I:%M:%S, LED off, last_flip updated, Sleep was called"))
-	       	    last_flip = time.time()
-		    sleep()
+        elif time.time() >= last_flip + flip_time:
+            if a1 != "...":
+                if GPIO.input(00) == 1 or GPIO.input(0o1) == 1 or GPIO.input(0o4) == 1:
+                    r.ChangeDutyCycle(0)
+                    g.ChangeDutyCycle(0)
+                    b.ChangeDutyCycle(0)
+                    flip_time = LED[a1]['T']
+                    print((time.strftime("%I:%M:%S, LED off, last_flip updated, Sleep was called")))
+                    last_flip = time.time()
+                    sleep()
 		
-		else:
-		    r.ChangeDutyCycle(LED[a1]['R'])
-		    g.ChangeDutyCycle(LED[a1]['G'])
-		    b.ChangeDutyCycle(LED[a1]['B'])
-		    flip_time = LED[a1]['T']
-		    last_flip = time.time()
-		    print (time.strftime("%I:%M:%S, LED color was called, last_flip updated, Sleep was called"))
-		    if flip_time == 0:
-		        last_flip = float("inf")
-		        sleep()
-		    else:
-	                sleep()
+                else:
+                    r.ChangeDutyCycle(LED[a1]['R'])
+                    g.ChangeDutyCycle(LED[a1]['G'])
+                    b.ChangeDutyCycle(LED[a1]['B'])
+                    flip_time = LED[a1]['T']
+                    last_flip = time.time()
+                    print((time.strftime("%I:%M:%S, LED color was called, last_flip updated, Sleep was called")))
+                    if flip_time == 0:
+                        last_flip = float("inf")
+                        sleep()
+                    else:
+                        sleep()
 	
-	    else:
+            else:
                 r.ChangeDutyCycle(0)
                 g.ChangeDutyCycle(0)
                 b.ChangeDutyCycle(0)
-	        flip_time = 0
-	        last_flip = float("inf")
-                print (time.strftime("%I:%M:%S, LED off, Sleep was called"))
-	        sleep()
+                flip_time = 0
+                last_flip = float("inf")
+                print((time.strftime("%I:%M:%S, LED off, Sleep was called")))
+                sleep()
 	
-	if time.time() >= last_indication + indication_time:
-	    if err == "web":
-		r.ChangeDutyCycle(100)
-		time.sleep(1)
-		r.ChangeDutyCycle(0)
-		indication_time = 5
-		last_indication = time.time()
-		if a1 != "...":
-		    err = 0
-		sleep()
-	    if err == "sys":
-		r.ChangeDutyCycle(50)
-		indication_time = 5
-		last_indication == time.time()
-		sleep()
-	    if a1 == "..." and err == 0:
-	    	    b.ChangeDutyCycle(100)
-	            time.sleep(0.10)
-	            b.ChangeDutyCycle(0)
-		    indication_time = 60
-	            last_indication = time.time()
-	            print (time.strftime("%I:%M:%S, LED flickered normally"))
+        if time.time() >= last_indication + indication_time:
+            if err == "web":
+                r.ChangeDutyCycle(100)
+                time.sleep(1)
+                r.ChangeDutyCycle(0)
+                indication_time = 5
+                last_indication = time.time()
+                if a1 != "...":
+                    err = 0
+                sleep()
+            if err == "sys":
+                r.ChangeDutyCycle(50)
+                indication_time = 5
+                last_indication == time.time()
+                sleep()
+            if a1 == "..." and err == 0:
+                b.ChangeDutyCycle(100)
+                time.sleep(0.10)
+                b.ChangeDutyCycle(0)
+                indication_time = 60
+                last_indication = time.time()
+                print((time.strftime("%I:%M:%S, LED flickered normally")))
 #		    print (err)
 #		    print ("^^^ Current Error Code")
 #		    print (last_indication)
 #		    print (time.time())
-	            sleep()
+                sleep()
     except:
-	print "Error:", sys.exc_info()[0]
-	err = "sys"
-	raise
+        print("Error:", sys.exc_info()[0])
+        err = "sys"
+        logging.info(time.strftime("%m-%d-%Y %T"))
+        logging.exception('This happened...')
+        logging.info(' ')
+        raise
